@@ -41,11 +41,11 @@ locals {
   custom_roles = merge(
     {
       for k, v in var.custom_role_names :
-      k => try(module.organization.custom_role_id[v], "")
+      k => try([module.organization.custom_role_id[v]], "")
     },
     {
       for k, v in var.custom_roles :
-      k => try(module.organization.custom_role_id[k], "")
+      k => try([module.organization.custom_role_id[k]], "")
     }
   )
   providers = {
@@ -60,6 +60,12 @@ locals {
       bucket        = module.automation-tf-resman-gcs.name
       name          = "resman"
       sa            = module.automation-tf-resman-sa.email
+    })
+    "1-gcp-groups" = templatefile(local._tpl_providers, {
+      backend_extra = null
+      bucket        = module.automation-tf-googlegroups-gcs.name
+      name          = "resman"
+      sa            = module.automation-tf-googlegroups-sa.email
     })
     "0-bootstrap-tenant" = templatefile(local._tpl_providers, {
       backend_extra = join("\n", [
@@ -173,6 +179,7 @@ output "service_accounts" {
   value = {
     bootstrap = module.automation-tf-bootstrap-sa.email
     resman    = module.automation-tf-resman-sa.email
+    gcp-groups = module.automation-tf-googlegroups-sa.email
   }
 }
 
